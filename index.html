@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SRT Subtitle Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>SRT Subtitle Generator</h1>
+        <form id="subtitleForm">
+            <div class="input-group">
+                <label for="startTime">Start Time (hh:mm:ss,ms):</label>
+                <input type="text" id="startTime" required>
+            </div>
+            <div class="input-group">
+                <label for="endTime">End Time (hh:mm:ss,ms):</label>
+                <input type="text" id="endTime" required>
+            </div>
+            <div class="input-group">
+                <label for="text">Subtitle Text:</label>
+                <textarea id="text" required></textarea>
+            </div>
+            <button type="button" id="addSubtitle">Add Subtitle</button>
+        </form>
+        <button id="generateSRT">Generate SRT</button>
+        <pre id="srtOutput"></pre>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
