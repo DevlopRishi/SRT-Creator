@@ -1,0 +1,560 @@
+   <!DOCTYPE html>
+   <html lang="en">
+   <head>
+   <meta charset="UTF-8">
+   <title>SRT Subtitle Editor</title>
+   <style>
+   :root {
+   --claude-primary: #6E37C5;
+   --claude-hover: #5B2DA6;
+   --claude-danger: #DC3545;
+   --claude-danger-hover: #C82333;
+   }
+   
+   body {
+   font-family: Arial, sans-serif;
+   max-width: 1200px;
+   margin: 0 auto;
+   padding: 20px;
+   background-color: #f5f5f5;
+   }
+   
+   .header {
+   text-align: center;
+   margin-bottom: 20px;
+   }
+   
+   .file-controls {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+   gap: 15px;
+   margin-bottom: 30px;
+   }
+   
+   .file-input-wrapper {
+   display: flex;
+   gap: 10px;
+   align-items: center;
+   }
+   
+   .subtitle-form {
+   background-color: white;
+   padding: 20px;
+   border-radius: 8px;
+   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+   margin-bottom: 20px;
+   }
+   
+   .time-input {
+   display: flex;
+   flex-direction: column;
+   gap: 15px;
+   margin-bottom: 15px;
+   }
+   
+   .time-row {
+   display: flex;
+   gap: 10px;
+   align-items: center;
+   }
+   
+   .time-group {
+   display: flex;
+   flex-direction: column;
+   }
+   
+   .time-group input {
+   width: 60px;
+   padding: 8px;
+   text-align: center;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   }
+   
+   .subtitle-text {
+   width: 100%;
+   height: 60px;
+   margin: 10px 0;
+   padding: 8px;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   resize: vertical;
+   }
+   
+   .buttons {
+   display: flex;
+   gap: 10px;
+   margin-top: 10px;
+   }
+   
+   button {
+   padding: 8px 16px;
+   cursor: pointer;
+   background-color: var(--claude-primary);
+   color: white;
+   border: none;
+   border-radius: 4px;
+   transition: background-color 0.2s;
+   }
+   
+   button:hover {
+   background-color: var(--claude-hover);
+   }
+   
+   .preview {
+   margin-top: 20px;
+   }
+   
+   .subtitle-count {
+   text-align: right;
+   color: #666;
+   margin-bottom: 10px;
+   }
+   
+   .view-toggle {
+   display: flex;
+   gap: 10px;
+   margin-bottom: 20px;
+   justify-content: center;
+   }
+   
+   .subtitle-card {
+   background-color: white;
+   padding: 15px;
+   border-radius: 8px;
+   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+   margin-bottom: 15px;
+   }
+   
+   .subtitle-number {
+   font-weight: bold;
+   margin-bottom: 10px;
+   color: var(--claude-primary);
+   }
+   
+   .card-buttons {
+   display: flex;
+   gap: 10px;
+   margin-top: 10px;
+   }
+   
+   .card-buttons button.delete {
+   background-color: var(--claude-danger);
+   }
+   
+   .card-buttons button.delete:hover {
+   background-color: var(--claude-danger-hover);
+   }
+   
+   .raw-view {
+   background-color: white;
+   padding: 20px;
+   border-radius: 8px;
+   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+   }
+   
+   .raw-textarea {
+   width: 100%;
+   min-height: 300px;
+   padding: 10px;
+   border: 1px solid #ddd;
+   border-radius: 4px;
+   font-family: monospace;
+   resize: vertical;
+   }
+   
+   .view-mode-btn {
+   padding: 8px 16px;
+   cursor: pointer;
+   background-color: #6c757d;
+   color: white;
+   border: none;
+   border-radius: 4px;
+   }
+   
+   .view-mode-btn.active {
+   background-color: var(--claude-primary);
+   }
+   
+   .error-message {
+   color: var(--claude-danger);
+   text-align: center;
+   margin: 10px 0;
+   display: none;
+   }
+   
+   .time-label {
+   min-width: 80px;
+   color: #666;
+   }
+   
+   .file-custom {
+   background-color: white;
+   padding: 8px 16px;
+   border: 1px solid var(--claude-primary);
+   border-radius: 4px;
+   color: var(--claude-primary);
+   cursor: pointer;
+   display: inline-block;
+   }
+   
+   .file-custom:hover {
+   background-color: #f8f9fa;
+   }
+   
+   #srtFile {
+   display: none;
+   }
+   
+   @media (max-width: 768px) {
+   body {
+   padding: 10px;
+   }
+   
+   .file-controls {
+   flex-direction: column;
+   gap: 10px;
+   }
+   
+   .time-row {
+   flex-direction: column;
+   gap: 5px;
+   }
+   
+   .time-group input {
+   width: 100%;
+   }
+   
+   .buttons {
+   flex-direction: column;
+   }
+   
+   .view-toggle {
+   flex-direction: column;
+   gap: 5px;
+   }
+   
+   .subtitle-text {
+   height: auto;
+   }
+   
+   .subtitle-card {
+   padding: 10px;
+   }
+   
+   .raw-textarea {
+   font-size: 14px;
+   }
+   }
+   </style>
+   </head>
+   <body>
+   <div class="header">
+   <h1>SRT Subtitle Editor</h1>
+   <div class="file-controls">
+   <div class="file-input-wrapper">
+   <label class="file-custom" for="srtFile">Choose SRT File</label>
+   <input type="file" id="srtFile" accept=".srt" />
+   <button onclick="downloadSRT()">Download SRT</button>
+   </div>
+   <div id="errorMessage" class="error-message"></div>
+   </div>
+   </div>
+   
+   <div class="subtitle-count">
+   Number of subtitles: <span id="subtitleCount">0</span>
+   </div>
+   
+   <div class="subtitle-form">
+   <div class="time-input">
+   <div class="time-row">
+   <span class="time-label">Start Time:</span>
+   <div class="time-group">
+   <input type="number" id="startHH" min="0" max="999" placeholder="hh"/>
+   </div>
+   <div class="time-group">
+   <input type="number" id="startMM" min="0" max="59" placeholder="mm"/>
+   </div>
+   <div class="time-group">
+   <input type="number" id="startSS" min="0" max="59" placeholder="ss"/>
+   </div>
+   <div class="time-group">
+   <input type="number" id="startMS" min="0" max="999" placeholder="ms"/>
+   </div>
+   </div>
+   <div class="time-row">
+   <span class="time-label">End Time:</span>
+   <div class="time-group">
+   <input type="number" id="endHH" min="0" max="999" placeholder="hh"/>
+   </div>
+   <div class="time-group">
+   <input type="number" id="endMM" min="0" max="59" placeholder="mm"/>
+   </div>
+   <div class="time-group">
+   <input type="number" id="endSS" min="0" max="59" placeholder="ss"/>
+   </div>
+   <div class="time-group">
+   <input type="number" id="endMS" min="0" max="999" placeholder="ms"/>
+   </div>
+   </div>
+   </div>
+   <textarea class="subtitle-text" id="subtitleText" placeholder="Enter subtitle text"></textarea>
+   <div class="buttons">
+   <button onclick="addSubtitle()">Add Subtitle</button>
+   <button onclick="clearForm()">Clear Form</button>
+   </div>
+   </div>
+   
+   <div class="view-toggle">
+   <button class="view-mode-btn active" onclick="toggleView('cards')" id="cardsViewBtn">Cards View</button>
+   <button class="view-mode-btn" onclick="toggleView('raw')" id="rawViewBtn">Raw View</button>
+   </div>
+   
+   <div class="preview" id="previewContainer">
+   <div id="cardsView"></div>
+   <div id="rawView" class="raw-view" style="display: none;">
+   <textarea id="rawTextarea" class="raw-textarea" onchange="updateFromRawText()"></textarea>
+   </div>
+   </div>
+   
+   <script>
+   let subtitles = [];
+   let currentView = 'cards';
+   
+   function padNumber(num, size) {
+   return num.toString().padStart(size, '0');
+   }
+   
+   function formatTime(hh, mm, ss, ms) {
+   return `${padNumber(hh, 3)}:${padNumber(mm, 2)}:${padNumber(ss, 2)},${padNumber(ms, 3)}`;
+   }
+   
+   function parseTime(timeStr) {
+   const [time, ms] = timeStr.split(',');
+   const [hh, mm, ss] = time.split(':');
+   return {
+   hh: parseInt(hh),
+   mm: parseInt(mm),
+   ss: parseInt(ss),
+   ms: parseInt(ms)
+   };
+   }
+   
+   function showError(message) {
+   const errorElement = document.getElementById('errorMessage');
+   errorElement.textContent = message;
+   errorElement.style.display = 'block';
+   setTimeout(() => {
+   errorElement.style.display = 'none';
+   }, 5000);
+   }
+   
+   function addSubtitle() {
+   const startHH = parseInt(document.getElementById('startHH').value) || 0;
+   const startMM = parseInt(document.getElementById('startMM').value) || 0;
+   const startSS = parseInt(document.getElementById('startSS').value) || 0;
+   const startMS = parseInt(document.getElementById('startMS').value) || 0;
+   
+   const endHH = parseInt(document.getElementById('endHH').value) || 0;
+   const endMM = parseInt(document.getElementById('endMM').value) || 0;
+   const endSS = parseInt(document.getElementById('endSS').value) || 0;
+   const endMS = parseInt(document.getElementById('endMS').value) || 0;
+   
+   const text = document.getElementById('subtitleText').value.trim();
+   
+   if (!text) {
+   showError('Please enter subtitle text');
+   return;
+   }
+   
+   const subtitle = {
+   number: subtitles.length + 1,
+   startTime: formatTime(startHH, startMM, startSS, startMS),
+   endTime: formatTime(endHH, endMM, endSS, endMS),
+   text: text
+   };
+   
+   subtitles.push(subtitle);
+   updatePreview();
+   clearForm();
+   }
+   
+   function clearForm() {
+   const inputs = ['startHH', 'startMM', 'startSS', 'startMS', 
+   'endHH', 'endMM', 'endSS', 'endMS', 'subtitleText'];
+   inputs.forEach(id => document.getElementById(id).value = '');
+   }
+   
+   function updatePreview() {
+   renumberSubtitles();
+   updateRawView();
+   updateCardsView();
+   document.getElementById('subtitleCount').textContent = subtitles.length;
+   }
+   
+   function renumberSubtitles() {
+   subtitles.forEach((sub, index) => {
+   sub.number = index + 1;
+   });
+   }
+   
+   function updateRawView() {
+   const content = subtitles.map(sub => 
+   `${sub.number}\n${sub.startTime} --> ${sub.endTime}\n${sub.text}\n`
+   ).join('\n');
+   document.getElementById('rawTextarea').value = content;
+   }
+   
+   function updateFromRawText() {
+   try {
+   const content = document.getElementById('rawTextarea').value;
+   const blocks = content.trim().split('\n\n');
+   
+   subtitles = blocks.map(block => {
+   const lines = block.split('\n');
+   if (lines.length < 3) throw new Error('Invalid SRT format');
+   
+   const timeMatch = lines[1].match(/(\d{2,3}:\d{2}:\d{2},\d{3}) --> (\d{2,3}:\d{2}:\d{2},\d{3})/);
+   if (!timeMatch) throw new Error('Invalid time format');
+   
+   return {
+   number: parseInt(lines[0]),
+   startTime: timeMatch[1],
+   endTime: timeMatch[2],
+   text: lines.slice(2).join('\n')
+   };
+   });
+   
+   updateCardsView();
+   document.getElementById('subtitleCount').textContent = subtitles.length;
+   } catch (error) {
+   showError('Invalid SRT format in raw text');
+   }
+   }
+   
+   function updateCardsView() {
+   const cardsContainer = document.getElementById('cardsView');
+   cardsContainer.innerHTML = '';
+   
+   subtitles.forEach((sub, index) => {
+   const startTime = parseTime(sub.startTime);
+   const endTime = parseTime(sub.endTime);
+   
+   const card = document.createElement('div');
+   card.className = 'subtitle-card';
+   card.innerHTML = `
+                    <div class="subtitle-number">Subtitle #${sub.number}</div>
+                    <div class="time-input">
+                        <div class="time-group">
+                            <label>Start Time</label>
+                            <div style="display: flex; gap: 5px;">
+                                <input type="number" min="0" max="999" value="${startTime.hh}" onchange="updateSubtitleTime(${index}, 'start', 'hh', this.value)"/>
+                                <input type="number" min="0" max="59" value="${startTime.mm}" onchange="updateSubtitleTime(${index}, 'start', 'mm', this.value)"/>
+                                <input type="number" min="0" max="59" value="${startTime.ss}" onchange="updateSubtitleTime(${index}, 'start', 'ss', this.value)"/>
+                                <input type="number" min="0" max="999" value="${startTime.ms}" onchange="updateSubtitleTime(${index}, 'start', 'ms', this.value)"/>
+                            </div>
+                        </div>
+                        <div class="time-group">
+                            <label>End Time</label>
+                            <div style="display: flex; gap: 5px;">
+                                <input type="number" min="0" max="999" value="${endTime.hh}" onchange="updateSubtitleTime(${index}, 'end', 'hh', this.value)"/>
+                                <input type="number" min="0" max="59" value="${endTime.mm}" onchange="updateSubtitleTime(${index}, 'end', 'mm', this.value)"/>
+                                <input type="number" min="0" max="59" value="${endTime.ss}" onchange="updateSubtitleTime(${index}, 'end', 'ss', this.value)"/>
+                                <input type="number" min="0" max="999" value="${endTime.ms}" onchange="updateSubtitleTime(${index}, 'end', 'ms', this.value)"/>
+                            </div>
+                        </div>
+                    </div>
+                    <textarea class="subtitle-text" onchange="updateSubtitleText(${index}, this.value)">${sub.text}</textarea>
+                    <div class="card-buttons">
+                        <button class="delete" onclick="deleteSubtitle(${index})">Delete</button>
+                    </div>
+                `;
+                cardsContainer.appendChild(card);
+            });
+        }
+
+        function updateSubtitleTime(index, type, unit, value) {
+            const subtitle = subtitles[index];
+            const timeKey = type + 'Time';
+            const time = parseTime(subtitle[timeKey]);
+            time[unit] = parseInt(value) || 0;
+            subtitle[timeKey] = formatTime(time.hh, time.mm, time.ss, time.ms);
+            updatePreview();
+        }
+
+        function updateSubtitleText(index, value) {
+            subtitles[index].text = value.trim();
+            updatePreview();
+        }
+
+        function deleteSubtitle(index) {
+            subtitles.splice(index, 1);
+            updatePreview();
+        }
+
+        function toggleView(view) {
+            currentView = view;
+            document.getElementById('cardsView').style.display = view === 'cards' ? 'block' : 'none';
+            document.getElementById('rawView').style.display = view === 'raw' ? 'block' : 'none';
+            document.getElementById('cardsViewBtn').classList.toggle('active', view === 'cards');
+            document.getElementById('rawViewBtn').classList.toggle('active', view === 'raw');
+        }
+
+        function downloadSRT() {
+            const content = subtitles.map(sub => 
+                `${sub.number}\n${sub.startTime} --> ${sub.endTime}\n${sub.text}\n`
+            ).join('\n');
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'subtitles.srt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        document.getElementById('srtFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const blocks = content.trim().split('\n\n');
+                
+                subtitles = blocks.map(block => {
+                    const lines = block.split('\n');
+                    return {
+                        number: parseInt(lines[0]),
+                        startTime: lines[1].split(' --> ')[0].trim(),
+                        endTime: lines[1].split(' --> ')[1].trim(),
+                        text: lines.slice(2).join('\n')
+                    };
+                });
+                
+                updatePreview();
+            };
+            reader.readAsText(file);
+        });
+
+        // Input validation for time fields
+        const timeInputs = document.querySelectorAll('input[type="number"]');
+        timeInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                const value = parseInt(this.value);
+                const max = parseInt(this.max);
+                if (value > max) {
+                    this.value = max;
+                }
+                if (value < 0) {
+                    this.value = 0;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
